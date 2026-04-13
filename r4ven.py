@@ -3,7 +3,14 @@ import os
 import sys
 import threading
 import logging
-from utils import get_file_data, update_webhook, check_and_get_webhook_url
+# Import Cloudinary utils alongside other utilities
+from utils import (
+    get_file_data, 
+    update_webhook, 
+    check_and_get_webhook_url,
+    configure_cloudinary, 
+    upload_image_to_cloudinary
+)
 from banner import print_banners
 from port_forward import run_tunnel, start_port_forwarding, ask_port_forwarding, shutdown_flag, run_flask, args, get_file_data, is_port_available
 
@@ -37,6 +44,14 @@ def main():
 
     log_file_path = os.path.abspath(log_file)
     print(f"{B}[+] {Y}Logs :{W} {log_file_path}\n")
+
+    # --- Cloudinary Configuration ---
+    print(f"{B}[~] {C}Attempting to configure Cloudinary...{W}")
+    cloudinary_enabled = configure_cloudinary()
+    if not cloudinary_enabled:
+        print(f"{Y}[!] Warning: Could not configure Cloudinary. Images will be saved locally only.{W}")
+    print(f'____________________________________________________________________________\n')
+    # -----------------------------
 
      # Check if port is available
     if not is_port_available(args.port):
@@ -81,7 +96,8 @@ def main():
     print(f"\n{start_message}\n")
     logging.info(start_message)
 
-    run_flask(folder_name)
+    # Pass cloudinary status to the Flask runner
+    run_flask(folder_name, cloudinary_enabled)
 
 if __name__ == "__main__":
     main()
