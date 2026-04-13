@@ -5,11 +5,16 @@ import os
 import re
 import sys
 
-# Cloudinary and environment variable imports
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-from dotenv import load_dotenv
+# Cloudinary and environment variable imports (optional)
+try:
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
+    from dotenv import load_dotenv
+    _cloudinary_available = True
+except ImportError:
+    _cloudinary_available = False
+    load_dotenv = None
 
 DISCORD_WEBHOOK_FILE_NAME = "dwebhook.js"
 
@@ -82,6 +87,9 @@ def configure_cloudinary():
     """
     Loads environment variables and configures the Cloudinary SDK.
     """
+    if not _cloudinary_available:
+        print(f"{Y}[-] Cloudinary package not installed. Skipping Cloudinary setup.{W}")
+        return False
     load_dotenv()
     cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
     api_key = os.getenv("CLOUDINARY_API_KEY")

